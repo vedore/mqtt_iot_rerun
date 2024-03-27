@@ -1,22 +1,8 @@
 package org.iot_mqtt.cloud_app.processor;
 
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import org.apache.commons.math3.analysis.function.*;
-import weka.classifiers.trees.RandomForest;
-import weka.core.Instance;
+import com.opencsv.*;
 import weka.core.Instances;
-import weka.core.converters.ArffSaver;
-import weka.core.converters.CSVLoader;
-
-import org.apache.commons.math3.analysis.UnivariateFunction;
-
-import org.apache.commons.math3.analysis.function.Min;
-import org.apache.commons.math3.analysis.function.Max;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Normalize;
+import weka.core.converters.ConverterUtils;
 
 import java.io.File;
 import java.io.FileReader;
@@ -25,8 +11,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.Random;
 
 public class MachineLearningProcess {
 
@@ -41,26 +25,42 @@ public class MachineLearningProcess {
             // loader.setSource(new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.data"));
             // Instances data = loader.getDataSet();
 
-            List<List<String>> records = new ArrayList<List<String>>();
+            /*
 
-            CSVParser parser = new CSVParserBuilder()
-                    .withSeparator(';')
-                    .withIgnoreQuotations(true)
-                    .build();
+            if (!new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.csv").exists()) {
+
+                List<List<String>> records = new ArrayList<List<String>>();
+
+                CSVParser parser = new CSVParserBuilder()
+                        .withSeparator(';')
+                        .withIgnoreQuotations(true)
+                        .build();
 
 
-            try (CSVReader csvReader = new CSVReaderBuilder(
-                    new FileReader(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.data"))
-                    .withSkipLines(0)
-                    .withCSVParser(parser)
-                    .build()) {
+                try (CSVReader csvReader = new CSVReaderBuilder(
+                        new FileReader(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.data"))
+                        .withSkipLines(0)
+                        .withCSVParser(parser)
+                        .build()) {
 
-                String[] values = null;
+                    String[] values = null;
 
-                while ((values = csvReader.readNext()) != null) {
-                    records.add(Arrays.asList(values));
+                    while ((values = csvReader.readNext()) != null) {
+                        records.add(Arrays.asList(values));
+                    }
                 }
+
+                createCSV(records);
+
             }
+
+             */
+
+            ConverterUtils.DataSource source = new ConverterUtils.DataSource(TRAINNINGSETLOCATIONWITHOUTFILE + "\\mqtt_data.rowData.csv");
+            Instances data = source.getDataSet();
+
+            System.out.println(data);
+
             // Save as ARFF
 
 
@@ -102,6 +102,20 @@ public class MachineLearningProcess {
 
 
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private static void createCSV(List<List<String>> records) {
+
+        try(CSVWriter writer = new CSVWriter(new FileWriter((TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.csv")))) {
+
+            for (List<String> each: records) {
+                String[] eachArray = each.toArray(new String[] {});
+                writer.writeNext(eachArray);
+            }
+
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }

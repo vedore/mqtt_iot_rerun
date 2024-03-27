@@ -46,6 +46,13 @@
         -->
 
         <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-stable</artifactId>
+            <version>3.8.0</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.8</version>
@@ -88,10 +95,17 @@
     </dependencies>
 
     <repositories>
+
         <!-- <repository>
             <id>Eclipse Paho Repo</id>
             <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
         </repository> -->
+
+        <repository>
+            <id>Weka Repository</id>
+            <url>https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable</url>
+        </repository>
+
     </repositories>
 
     <build>
