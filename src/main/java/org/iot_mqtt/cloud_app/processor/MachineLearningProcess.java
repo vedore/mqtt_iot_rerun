@@ -1,12 +1,24 @@
 package org.iot_mqtt.cloud_app.processor;
 
-import com.opencsv.*;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import org.checkerframework.checker.units.qual.A;
+import weka.classifiers.Evaluation;
+import weka.classifiers.trees.RandomForest;
+import weka.core.Attribute;
 import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+import weka.core.converters.CSVLoader;
 import weka.core.converters.ConverterUtils;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Normalize;
+import weka.filters.unsupervised.attribute.Remove;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -16,107 +28,96 @@ public class MachineLearningProcess {
 
     private static final String TRAINNINGSETLOCATIONWITHOUTFILE = System.getProperty("user.dir") + "\\data";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+
+        if (!new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.arff").exists()) {
+            createArffFile();
+        }
+
+
+        ConverterUtils.DataSource source = new ConverterUtils.DataSource(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.arff");
+        Instances dataSet = source.getDataSet();
+        dataSet.setClassIndex(dataSet.numAttributes() - 1);
+
+        //dataSet.deleteAttributeAt(0);
+        //dataSet.deleteAttributeAt(0);
+
+        Remove removeFilter = new Remove();
+        removeFilter.setInvertSelection(true);
+        removeFilter.setAttributeIndices("3");
+        removeFilter.setInputFormat(dataSet);
+        Instances outputs = Filter.useFilter(dataSet, removeFilter);
+
+        removeFilter.setInvertSelection(false);
+        removeFilter.setAttributeIndices("first-3");
+        removeFilter.setInputFormat(dataSet);
+        Instances inputs = Filter.useFilter(dataSet, removeFilter);
+
+        System.out.println(inputs.numAttributes());
+        System.out.println(outputs.numAttributes());
+
+        // Normalize normalize = new Normalize();
+        // normalize.setInputFormat(dataSet);
+
+        RandomForest randomForest = new RandomForest();
+        randomForest.setNumFeatures(1);
+        randomForest.buildClassifier(inputs);
+
+        System.out.println("ended");
+
+        Evaluation eval = new Evaluation(inputs);
+        eval.evaluateModel(randomForest, outputs);
+
+        //Print the algorithm summary//
+
+
+
+        // normalize.setInputFormat(dataSet);
+        // Instances newdata = Filter.useFilter(dataSet, normalize);
+
+        // System.out.println(newdata);
+
+
+    }
+    private static void createArffFile() {
 
         try {
-
             // Load CSV File
-            // CSVLoader loader = new CSVLoader();
-            // loader.setSource(new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.data"));
-            // Instances data = loader.getDataSet();
-
-            /*
-
-            if (!new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.csv").exists()) {
-
-                List<List<String>> records = new ArrayList<List<String>>();
-
-                CSVParser parser = new CSVParserBuilder()
-                        .withSeparator(';')
-                        .withIgnoreQuotations(true)
-                        .build();
-
-
-                try (CSVReader csvReader = new CSVReaderBuilder(
-                        new FileReader(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.data"))
-                        .withSkipLines(0)
-                        .withCSVParser(parser)
-                        .build()) {
-
-                    String[] values = null;
-
-                    while ((values = csvReader.readNext()) != null) {
-                        records.add(Arrays.asList(values));
-                    }
-                }
-
-                createCSV(records);
-
-            }
-
-             */
-
-            ConverterUtils.DataSource source = new ConverterUtils.DataSource(TRAINNINGSETLOCATIONWITHOUTFILE + "\\mqtt_data.rowData.csv");
-            Instances data = source.getDataSet();
-
-            System.out.println(data);
+            CSVLoader loader = new CSVLoader();
+            loader.setSource(new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.csv"));
+            Instances data = loader.getDataSet();
 
             // Save as ARFF
-
-
-            /*ArffSaver saver = new ArffSaver();
+            ArffSaver saver = new ArffSaver();
             saver.setInstances(data);
             saver.setFile(new File(TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.arff"));
             saver.writeBatch();
 
-            // Labels
-            data.setClassIndex(0);
-
-            // System.out.println(data.attribute(1));
-
-            /*
-
-            System.out.println(data);
-
-            // Normalize
-            Normalize normalizeFilter = new Normalize();
-            normalizeFilter.setInputFormat(data);
-            Instances normalizedData = Filter.useFilter(data, normalizeFilter);
-
-            // Separate features and labels
-            Instances features = new Instances(normalizedData, 1, normalizedData.numAttributes() - 1);
-            Instances labels = new Instances(normalizedData, 0);
-
-            // Train The Random Forest Classifier
-
-            /*
-
-            RandomForest rf = new RandomForest();
-            rf.buildClassifier(normalizedData);
-
-            // System.out.println(normalizedData);
-
-            weka.core.SerializationHelper.write(TRAINNINGSETLOCATIONWITHOUTFILE + "\\random_forest.model", rf);
-
-            */
-
-
-        } catch (Exception e) {
+        } catch (IOException e ) {
             System.out.println(e.getMessage());
         }
     }
 
-    private static void createCSV(List<List<String>> records) {
+    private static Instances combineInstances(Instances D1, Instances D2) {
 
-        try(CSVWriter writer = new CSVWriter(new FileWriter((TRAINNINGSETLOCATIONWITHOUTFILE + "\\trainning.csv")))) {
-
-            for (List<String> each: records) {
-                String[] eachArray = each.toArray(new String[] {});
-                writer.writeNext(eachArray);
-            }
-
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+        Instances D = new Instances(D1);
+        for(int i = 0; i < D2.numInstances(); i++) {
+            D.add(D2.instance(i));
         }
+        return D;
     }
+
+    // HardCoded
+    private static void createInstanceWithAtributes(String name, Instances dataset) {
+
+        // ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+
+        // Attribute att = new Attribute("activity", 0);
+
+        // attributes.add(dataset.)
+
+
+    }
+
+
 }

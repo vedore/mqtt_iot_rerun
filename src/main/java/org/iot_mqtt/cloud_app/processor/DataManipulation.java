@@ -9,25 +9,31 @@ import java.util.Locale;
 
 public class DataManipulation {
 
+    private static final String TRAININGFILELOCATION = System.getProperty("user.dir") + "\\data";
+
     public static void main(String[] args) {
 
-        String trainingFileLocation = System.getProperty("user.dir") + "\\data\\trainning.data";
+        if(!new File(TRAININGFILELOCATION + "\\trainning.csv").exists()) {
 
-        File file = new File(trainingFileLocation);
+            File file = new File(TRAININGFILELOCATION + "\\trainning.data");
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy", Locale.ENGLISH);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yy", Locale.ENGLISH);
 
-        CsvReadOptions.Builder builder =
-                CsvReadOptions.builder(file)
-                        .separator(';')
-                        .dateFormat(dateFormatter)
-                        .header(true);
+            CsvReadOptions.Builder builder =
+                    CsvReadOptions.builder(file)
+                            .separator(';')
+                            .dateFormat(dateFormatter)
+                            .header(true);
 
-        CsvReadOptions options = builder.build();
+            CsvReadOptions options = builder.build();
 
-        Table table = Table.read().usingOptions(options);
+            Table table = Table.read().usingOptions(options);
 
-        System.out.println(table.structure());
+            // System.out.println(table.structure());
+
+        } else{
+          System.out.println("Already Exists");
+        }
 
     }
 

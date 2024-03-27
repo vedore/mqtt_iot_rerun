@@ -46,13 +46,6 @@
         -->
 
         <dependency>
-            <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>weka-stable</artifactId>
-            <version>3.8.0</version>
-        </dependency>
-
-
-        <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.8</version>
@@ -92,6 +85,13 @@
             <version>0.43.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-stable</artifactId>
+            <version>3.8.0</version>
+        </dependency>
+
+
     </dependencies>
 
     <repositories>
@@ -102,7 +102,7 @@
         </repository> -->
 
         <repository>
-            <id>Weka Repository</id>
+            <id>Weka Repo</id>
             <url>https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable</url>
         </repository>
 
